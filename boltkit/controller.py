@@ -21,6 +21,7 @@
 from __future__ import print_function
 
 import platform
+import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter, REMAINDER
 from base64 import b64encode
 from hashlib import sha256
@@ -567,7 +568,9 @@ def _install(edition, version, path, **kwargs):
         return home
 
 
-def install():
+def install(args=None):
+    if not args:
+        args = sys.argv[1:]
     parser = ArgumentParser(
         description="Download and extract a Neo4j server package for the current platform.\r\n"
                     "\r\n"
@@ -584,13 +587,15 @@ def install():
     parser.add_argument("version", help="Neo4j server version")
     parser.add_argument("path", nargs="?", default=".",
                         help="download destination path (default: .)")
-    parsed = parser.parse_args()
+    parsed = parser.parse_args(args)
     home = _install("enterprise" if parsed.enterprise else "community",
                     parsed.version, parsed.path, verbose=parsed.verbose)
-    print(home)
+    return home
 
 
-def start():
+def start(args=None):
+    if not args:
+        args = sys.argv[1:]
     parser = ArgumentParser(
         description="Start an installed Neo4j server instance.\r\n"
                     "\r\n"
@@ -603,7 +608,7 @@ def start():
     parser.add_argument("-t", "--timeout", type=float, default=90,
                         help="number of seconds to wait for server to start")
     parser.add_argument("home", nargs="?", default=".", help="Neo4j server directory (default: .)")
-    parsed = parser.parse_args()
+    parsed = parser.parse_args(args)
     if platform.system() == "Windows":
         controller = WindowsController(parsed.home, 1 if parsed.verbose else 0)
     else:
